@@ -26,6 +26,7 @@ test('JSON Return Example', async () => {
   const entity = new JSONEntity();
   entity.value = "1";
   await orm.em.persistAndFlush(entity);
+  // Clearing orm to ensure that the entity is not cached
   orm.em.clear();
   const result = await orm.em.findOne(JSONEntity, { id: entity.id });
   // this test case fails as "1" is not return, is.
