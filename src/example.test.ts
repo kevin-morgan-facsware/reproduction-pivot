@@ -28,7 +28,7 @@ test('JSON Return Example', async () => {
   await orm.em.persistAndFlush(entity);
   orm.em.clear();
   const result = await orm.em.findOne(JSONEntity, { id: entity.id });
-
+  // this test case fails as "1" is not return, is.
   expect(result).not.toBeNull();
   expect(result?.value).toStrictEqual("1");
 });
