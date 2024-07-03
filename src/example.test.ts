@@ -1,30 +1,17 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
-@Entity()
-class User {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  name: string;
-
-  @Property({ unique: true })
-  email: string;
-
-  constructor(name: string, email: string) {
-    this.name = name;
-    this.email = email;
-  }
-
-}
+import { MikroORM } from '@mikro-orm/postgresql';
+import { JSONEntity } from './entities/jsontest.entity';
 
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    dbName: ':memory:',
-    entities: [User],
+    host: 'localhost',
+    port: 5432,
+    user: 'admin',
+    password: 'admin',
+    dbName: 'nestjsrealworld2',
+    entities: [JSONEntity],
     debug: ['query', 'query-params'],
     allowGlobalContext: true, // only for testing
   });
@@ -35,17 +22,13 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('basic CRUD example', async () => {
-  orm.em.create(User, { name: 'Foo', email: 'foo' });
-  await orm.em.flush();
+test('JSON Return Example', async () => {
+  const entity = new JSONEntity();
+  entity.value = "1";
+  await orm.em.persistAndFlush(entity);
   orm.em.clear();
+  const result = await orm.em.findOne(JSONEntity, { id: entity.id });
 
-  const user = await orm.em.findOneOrFail(User, { email: 'foo' });
-  expect(user.name).toBe('Foo');
-  user.name = 'Bar';
-  orm.em.remove(user);
-  await orm.em.flush();
-
-  const count = await orm.em.count(User, { email: 'foo' });
-  expect(count).toBe(0);
+  expect(result).not.toBeNull();
+  expect(result?.value).toStrictEqual("1");
 });
